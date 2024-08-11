@@ -8,6 +8,8 @@ dotenv.load_dotenv()
 
 
 def main():
+    """A service that listens on a SQS queue, and fetches objets referenced in the messages"""
+
     credentials = {
         "aws_access_key_id": os.environ.get("AWS_ACCESS_KEY_ID"),
         "aws_secret_access_key": os.environ.get("AWS_SECRET_ACCESS_KEY"),
