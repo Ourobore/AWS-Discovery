@@ -17,6 +17,32 @@ The goal of this project was to discover the [AWS](https://aws.amazon.com/) ecos
 
 The idea here is that the original and final files are the same, but the original and final state are not.
 
+## Infrastructure configuration
+
+This repository doesn't contain any infrastructure definition via [CDK](https://aws.amazon.com/cdk/). So for the logic included in this repository to work correctly, be sure to already have deployed the necessary AWS services and configuration. This include:
+
+- **DynamoDB** - A database table to store key value pairs
+- **S3** - A storage bucket to store JSON files
+- **SQS** - 3 messages queues
+  - The first one for the script to upload messages and the Lambda to reads them
+  - The second one for the Lambda to upload messages and the service to read them
+  - A third one that's is a Dead Letter Queue for the second one for messages that were not correctly read by the service
+- **Lambda** - Some logic that reads the first queue, update the database table, and push messages on the second queue. The logic corresponds to the `adapters/update_database_item_lambda.py` file
+- **IAM** - Non root user with access keys to not use the root credentials
+  -  Minimal policies needed regrouped into a group linked to this user
+     -  For the script:
+        -  Write access on the DynamoDB table to create item
+        -  Write access on the S3 bucket to upload file
+        -  Write access on the first SQS queue to push message
+     -  For the service:
+        -  Read access on the second SQS queue to receive messages
+        -  Read access on the DynamoDB table to get item
+        -  Read access on the S3 bucket to download file
+-  **IAM** - Minimal policies needed by the Lambda logic
+   -  Read access on the first SQS queue to receive messages
+   -  Write access on the DynamoDB table to update an item
+   -  Write access on the second SQS queue to push pessages
+
 ## How to run it
 
 This project uses [Poetry](https://python-poetry.org/) as it's dependency manager. So to install the project, you can run the following command:
